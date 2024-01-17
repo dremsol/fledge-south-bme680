@@ -24,20 +24,20 @@ __license__ = "Apache 2.0"
 __version__ = "${VERSION}"
 
 _DEFAULT_CONFIG = {
-    'plugin': {
-        'description': 'BME680 South Plugin',
-        'type': 'string',
-        'default': 'bme680',
-        'readonly': 'true'
+    "plugin": {
+        "description": "BME680 South Plugin",
+        "type": "string",
+        "default": "bme680",
+        "readonly": "true",
     },
-    'assetName': {
-        'description': 'Asset name',
-        'type': 'string',
-        'default': "bme680",
-        'order': "1",
-        'displayName': 'Asset Name',
-        'mandatory': 'true'
-    }
+    "assetName": {
+        "description": "Asset name",
+        "type": "string",
+        "default": "bme680",
+        "order": "1",
+        "displayName": "Asset Name",
+        "mandatory": "true",
+    },
 }
 
 
@@ -45,8 +45,9 @@ _LOGGER = logger.setup(__name__)
 """ Setup the access to the logging system of Fledge """
 _LOGGER.setLevel(logging.INFO)
 
+
 def plugin_info():
-    """ Returns information about the plugin.
+    """Returns information about the plugin.
 
     Args:
     Returns:
@@ -55,17 +56,17 @@ def plugin_info():
     """
 
     return {
-        'name': 'BME680 GPIO',
-        'version': '1.0.0',
-        'mode': 'poll',
-        'type': 'south',
-        'interface': '1.0',
-        'config': _DEFAULT_CONFIG
+        "name": "BME680",
+        "version": "1.0.0",
+        "mode": "poll",
+        "type": "south",
+        "interface": "1.0",
+        "config": _DEFAULT_CONFIG,
     }
 
 
 def plugin_init(config):
-    """ Initialise the plugin.
+    """Initialise the plugin.
 
     Args:
         config: JSON configuration document for the plugin configuration category
@@ -82,7 +83,7 @@ def plugin_init(config):
 
 
 def plugin_poll(handle):
-    """ Extracts data from the sensor and returns it in a JSON document as a Python dict.
+    """Extracts data from the sensor and returns it in a JSON document as a Python dict.
 
     Available for poll mode only.
 
@@ -103,13 +104,19 @@ def plugin_poll(handle):
         pressure = bme680.pressure
         altitude = bme680.altitude
 
-        if relative_humidity is not None and temperature is not None:
+        if temperature and gas and relative_humidity and pressure and altitude:
             time_stamp = utils.local_timestamp()
-            readings = {'temperature': temperature, 'relative_humidity': relative_humidity}
+            readings = {
+                "temperature": temperature,
+                "gas": gas,
+                "relative_humidity": relative_humidity,
+                "pressure": pressure,
+                "altitude": altitude,
+            }
             wrapper = {
-                    'asset':     handle['assetName']['value'],
-                    'timestamp': time_stamp,
-                    'readings':  readings
+                "asset": handle["assetName"]["value"],
+                "timestamp": time_stamp,
+                "readings": readings,
             }
         else:
             raise exceptions.DataRetrievalError
@@ -120,7 +127,7 @@ def plugin_poll(handle):
 
 
 def plugin_reconfigure(handle, new_config):
-    """ Reconfigures the plugin, it should be called when the configuration of the plugin is changed during the
+    """Reconfigures the plugin, it should be called when the configuration of the plugin is changed during the
         operation of the south service.
         The new configuration category should be passed.
 
@@ -131,14 +138,16 @@ def plugin_reconfigure(handle, new_config):
         new_handle: new handle to be used in the future calls
     Raises:
     """
-    _LOGGER.info("Old config for BME680 plugin {} \n new config {}".format(handle, new_config))
+    _LOGGER.info(
+        "Old config for BME680 plugin {} \n new config {}".format(handle, new_config)
+    )
 
     new_handle = copy.deepcopy(new_config)
     return new_handle
 
 
 def plugin_shutdown(handle):
-    """ Shutdowns the plugin doing required cleanup, to be called prior to the service being shut down.
+    """Shutdowns the plugin doing required cleanup, to be called prior to the service being shut down.
 
     Args:
         handle: handle returned by the plugin initialisation call
